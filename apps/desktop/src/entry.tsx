@@ -1,0 +1,11 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App.tsx';
+import './style.css';
+import './riftbound.css';
+import './table.css';
+import './battle-effects.css';
+import './card-drag.css';
+import './table-cinematic.css';
+import './turn-playback.css';
+createRoot(document.getElementById('root')!).render(<App />);

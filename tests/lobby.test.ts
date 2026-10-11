@@ -1,0 +1,22 @@
+import { expect, it } from 'vitest';
+import { Lobby } from '../apps/server/src/lobby.ts';
+import { starterDeck } from '../packages/game-content/src/index.ts';
+import type { LobbyView } from '../packages/shared/src/index.ts';
+it('validates private rooms, host permissions, decks and reconnects', () => {
+  let view: LobbyView;
+  const lobby = new Lobby((_, next) => { view = next; });
+  const host = lobby.command('host', { type: 'create', nickname: 'Host', password: 'secret', format: 'duel' });
+  expect(host.token).toHaveLength(64);
+  const code = view!.code;
+  expect(lobby.command('guest', { type: 'join', nickname: 'Guest', password: 'wrong', code }).ok).toBe(false);
+  expect(lobby.command('guest', { type: 'join', nickname: 'Guest', password: 'secret', code }).ok).toBe(true);
+  expect(lobby.command('guest', { type: 'format', format: 'teams' }).ok).toBe(false);
+  expect(lobby.command('guest', { type: 'ready', ready: true, deck: { name: 'Bad', cards: [] } }).ok).toBe(false);
+  expect(lobby.command('host', { type: 'ready', ready: true, deck: starterDeck }).ok).toBe(true);
+  lobby.disconnect('host');
+  expect(view!.players[0].connected).toBe(false);
+  expect(lobby.command('reconnected', { type: 'resume', token: host.token }).ok).toBe(true);
+  expect(view!.players[0].connected).toBe(true);
+  expect(JSON.stringify(view!)).not.toContain(host.token);
+  expect(JSON.stringify(view!)).not.toContain('secret');
+});

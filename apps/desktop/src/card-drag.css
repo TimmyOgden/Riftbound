@@ -1,0 +1,12 @@
+.draggable-card{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.draggable-card:active{cursor:grabbing}
+.champion-in-hand .hand-button{width:82px}
+.dragging-source{opacity:.3!important}
+.drag-card-ghost{position:fixed;width:110px;transform:translate(-50%,-60%) rotate(-5deg);z-index:100;pointer-events:none;filter:drop-shadow(0 12px 25px #000b)}
+.drag-card-ghost .card-art{border:2px solid #e3ca88;box-shadow:0 0 30px #e3ca8855}
+.drag-card-ghost span{position:absolute;left:50%;transform:translateX(-50%);bottom:-24px;white-space:nowrap;font-size:8px;letter-spacing:1px;color:#e8d8a7;padding:5px 8px;border-radius:3px;background:#0d202de6}
+.your-base.drop-ready{outline:1px dashed #d8c089;outline-offset:-4px;background:#bda46215}
+.field-zone.drop-hover,.your-base.drop-hover{outline:2px solid #efe2ad;outline-offset:-3px;box-shadow:inset 0 0 40px #ccb27240}
+.table-unit.drop-hover{outline:2px solid #9df3d7;box-shadow:0 0 25px #9df3d799;transform:scale(1.1)}
+.drop-base-prompt{position:absolute;right:12px;top:9px;color:#e0c892;font-size:9px;pointer-events:none}
+@media(max-width:700px){.champion-in-hand .hand-button{width:72px}.drag-card-ghost{width:85px}.drag-card-ghost span{font-size:6px}.drop-base-prompt{font-size:7px}}

@@ -1,0 +1,57 @@
+import { test, expect } from '@playwright/test';
+
+test('Chrome: coin reveal, private deck draws, rune glyphs and play flight', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Enter the Rift' })).toBeEnabled();
+  await page.getByRole('combobox').first().selectOption('proving-grounds-lux');
+  await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await expect(page.getByRole('dialog', { name: 'First player coin flip' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'You go first.', exact: true })).toBeVisible();
+  await page.screenshot({ path: '.runtime/browser-test/coin.png' });
+  await page.getByRole('button', { name: /Take your seat/ }).click();
+  await expect(page.locator('.flight-draw[data-flight-owner="0"]')).toHaveCount(5);
+  await expect(page.locator('.flight-draw[data-flight-owner="1"] .flight-front')).toHaveCount(0);
+  await expect(page.locator('.your-header .rune-icon')).toHaveCount(2);
+  await page.waitForTimeout(550);
+  await page.screenshot({ path: '.runtime/browser-test/drawing.png' });
+  const count = await page.locator('.visual-hand > .hand-button').count();
+  await page.getByRole('button', { name: 'End turn', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
+  await expect(page.locator('.visual-hand > .hand-button')).toHaveCount(count + 1);
+  await expect(page.locator('.flight-draw[data-flight-owner="0"]')).toHaveCount(1);
+  await page.getByRole('button', { name: /Select chosen champion/ }).click();
+  await page.getByRole('button', { name: /Play card/ }).click();
+  await expect(page.locator('.flight-play[data-flight-owner="0"]')).toHaveCount(1);
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: '.runtime/browser-test/playing.png' });
+  await page.getByRole('button', { name: 'Refresh', exact: false }).click();
+  await page.waitForTimeout(3500);
+  await expect(page.locator('.card-flight')).toHaveCount(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: '.runtime/browser-test/mobile-table.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.locator('.mini-deck[data-zone="deck-0"]')).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('Chrome: AI wins the toss and second-player bonus works with reduced motion', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Online/ }).click();
+  await page.getByLabel('Server address').fill('http://127.0.0.1:3089');
+  await page.getByRole('button', { name: 'Connect', exact: true }).click();
+  await expect(page.locator('.settings-page').getByText('Your server is online.', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await expect(page.getByRole('heading', { name: 'Your rival goes first.' })).toBeVisible();
+  await expect(page.getByText('You go second: channel an extra rune on your first turn.')).toBeVisible();
+  await page.screenshot({ path: '.runtime/browser-test/coin-second.png' });
+  await page.getByRole('button', { name: /Take your seat/ }).click();
+  await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
+  await expect(page.locator('.turn-marker')).toContainText('TURN 2');
+  await expect(page.locator('.your-header .rune-icon')).toHaveCount(3);
+  await expect(page.locator('.visual-hand > .hand-button')).toHaveCount(5);
+  await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
+  await expect(page.locator('.card-flights')).toBeHidden();
+});
