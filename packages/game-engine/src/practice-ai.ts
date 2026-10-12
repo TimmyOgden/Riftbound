@@ -1,10 +1,19 @@
 import { riftboundCardById as cards } from '../../riftbound-content/src/index.ts';
-import { practiceActions, practiceMight, type PracticeAction, type PracticeView, type PracticeState } from './practice.ts';
+import { practiceActions, practiceActor, practiceMight, type PracticeAction, type PracticeView, type PracticeState } from './practice.ts';
 // Receives a player projection, never the full game state or the opponent's hand/decks.
 export function choosePracticeAction(view: PracticeView): PracticeAction {
-  const player = view.active, own = view.players[player];
+  const player = practiceActor(view), own = view.players[player];
   const value = (action: PracticeAction) => {
-    if (action.type === 'end') return 0;
+    if (action.type === 'end' || action.type === 'pass') return 0;
+    if (action.type === 'assign' || action.type === 'discard' || action.type === 'retrieve') return 50;
+    if (action.type === 'group-move') {
+      if (action.field < 0 || view.fields[action.field].controller === player) return -3;
+      const publicState = view as unknown as PracticeState;
+      const attack = action.units.reduce((sum, id) => sum + practiceMight(publicState, { ...view.units.find(u => u.id === id)!, location: action.field }, 'attacker'), 0);
+      const enemies = view.units.filter(u => u.owner !== player && u.location === action.field);
+      const defense = enemies.reduce((sum, u) => sum + practiceMight(publicState, u, 'defender'), 0);
+      return !enemies.length ? 36 : attack > defense ? 26 + attack - defense : -4;
+    }
     if (action.type === 'activate') {
       if (action.source === 'legend') return own.legend === 'OGN-265' ? 7 : view.units.find(u => u.id === action.target)?.buff ? -1 : 9;
       // Lux energy is useful only when it unlocks an implemented legal spell.

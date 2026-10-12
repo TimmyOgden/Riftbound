@@ -12,7 +12,7 @@ export function usePracticePlayback(opening: boolean, suspended: boolean) {
     if (!reply.view) return;
     const frames = reply.ok && reply.sequence?.length ? reply.sequence : [reply.view];
     setPaused(false);
-    setState({ view: frames[0], queue: frames.slice(1), completed: 0, total: frames.length - 1 });
+    setState({ view: frames[0], queue: frames.slice(1), completed: 0, total: frames.length - 1, skipped: reply.restored ? reply.view.revision : undefined });
   }, []);
   const clear = useCallback(() => { setState(empty); setPaused(false); }, []);
   const skip = useCallback(() => {

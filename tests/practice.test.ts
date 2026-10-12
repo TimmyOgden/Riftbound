@@ -1,8 +1,16 @@
 import { expect, it } from 'vitest';
 import { riftboundStarters } from '../packages/riftbound-content/src/index.ts';
-import { createPractice, practiceProject, practiceReason, practiceTransition } from '../packages/game-engine/src/practice.ts';
+import { createPractice, practiceProject, practiceReason, practiceTransition, practiceActor } from '../packages/game-engine/src/practice.ts';
 import { choosePracticeAction } from '../packages/game-engine/src/practice-ai.ts';
-import { PracticeMatches } from '../apps/server/src/practice.ts';
+import { PracticeMatches, type PracticeReply } from '../apps/server/src/practice.ts';
+function settle(matches: PracticeMatches, socket: string, reply: PracticeReply) {
+  for (let step = 0; step < 80 && reply.view!.active === 1; step++) {
+    const action = reply.view!.legal.find(a => a.type === 'pass' || a.type === 'assign');
+    if (!action) break;
+    reply = matches.command(socket, { type: 'action', revision: reply.view!.revision, action });
+  }
+  return reply;
+}
 it.each([0, 1])('deals and channels correctly when player %i starts', first => {
   const entrants = riftboundStarters.slice(0, 2).map(({ deck }, i) => ({ name: String(i), deck }));
   const state = createPractice(entrants, first, 'opening-test');
@@ -25,7 +33,7 @@ it.each([0, 1])('deals and channels correctly when player %i starts', first => {
 it.each([0, 1])('returns an actionable player turn after the opening coin chooses %i', first => {
   const matches = new PracticeMatches(() => first);
   const input = { type: 'start', deck: riftboundStarters[0].deck, opponent: riftboundStarters[2].id };
-  const reply = matches.command('opening', input);
+  const reply = settle(matches, 'opening', matches.command('opening', input));
   expect(reply.ok).toBe(true);
   expect(reply.view).toMatchObject({ active: 0, firstPlayer: first });
   expect(reply.view!.players[0].hand).toHaveLength(5);
@@ -60,7 +68,7 @@ it.each([0, 1])('returns private, ordered playback frames for first player %i', 
   expect(frames.length).toBeLessThanOrEqual(62);
   expect(frames[0].active).toBe(1);
   expect(frames.at(-1)).toEqual(reply.view);
-  expect(frames.at(-1)!.active).toBe(0);
+  expect(practiceActor(frames.at(-1)!)).toBe(0);
   frames.forEach((frame, i) => {
     if (i) expect(frame.revision).toBe(frames[i - 1].revision + 1);
     expect(frame.matchId).toBe(reply.view!.matchId);
@@ -68,7 +76,7 @@ it.each([0, 1])('returns private, ordered playback frames for first player %i', 
     expect(frame.players.every(p => !('deck' in p) && !('runeDeck' in p))).toBe(true);
     expect(frame.events.filter(e => e.type === 'draw' && e.player === 1).every(e => !e.unit && !e.cardId)).toBe(true);
   });
-  expect(frames.some(frame => frame.events.some(e => e.type === 'activate' && e.player === 1))).toBe(true);
+  expect(frames.some(frame => frame.chain?.some(item => item.player === 1))).toBe(true);
   expect(matches.command('sequence', { type: 'view' }).view).toEqual(reply.view);
   expect(matches.command('sequence', { type: 'action', revision: frames[0].revision, action: { type: 'end' } }).ok).toBe(false);
 });

@@ -1,3 +1,4 @@
+import { settleMatch } from './match-helpers.ts';
 import { test, expect } from '@playwright/test';
 
 test('Chrome: coin reveal, private deck draws, rune glyphs and play flight', async ({ page }) => {
@@ -5,11 +6,17 @@ test('Chrome: coin reveal, private deck draws, rune glyphs and play flight', asy
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Enter the Rift' })).toBeEnabled();
   await page.getByRole('combobox').first().selectOption('proving-grounds-lux');
+  // Hold the intro timers while capturing it: fonts/artwork can take longer
+  // to settle than the automatic dismissal on a fresh machine.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date());
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
   await expect(page.getByRole('dialog', { name: 'First player coin flip' })).toBeVisible();
+  await page.clock.runFor(1400);
   await expect(page.getByRole('heading', { name: 'You go first.', exact: true })).toBeVisible();
   await page.screenshot({ path: '.runtime/browser-test/coin.png' });
   await page.getByRole('button', { name: /Take your seat/ }).click();
+  await page.clock.resume();
   await expect(page.locator('.flight-draw[data-flight-owner="0"]')).toHaveCount(5);
   await expect(page.locator('.flight-draw[data-flight-owner="1"] .flight-front')).toHaveCount(0);
   await expect(page.locator('.your-header .rune-icon')).toHaveCount(2);
@@ -17,6 +24,7 @@ test('Chrome: coin reveal, private deck draws, rune glyphs and play flight', asy
   await page.screenshot({ path: '.runtime/browser-test/drawing.png' });
   const count = await page.locator('.visual-hand > .hand-button').count();
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await expect(page.locator('.visual-hand > .hand-button')).toHaveCount(count + 1);
   await expect(page.locator('.flight-draw[data-flight-owner="0"]')).toHaveCount(1);
@@ -48,10 +56,12 @@ test('Chrome: AI wins the toss and second-player bonus works with reduced motion
   await expect(page.getByText('You go second: channel an extra rune on your first turn.')).toBeVisible();
   await page.screenshot({ path: '.runtime/browser-test/coin-second.png' });
   await page.getByRole('button', { name: /Take your seat/ }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await expect(page.locator('.turn-marker')).toContainText('TURN 2');
   await expect(page.locator('.your-header .rune-icon')).toHaveCount(3);
   await expect(page.locator('.visual-hand > .hand-button')).toHaveCount(5);
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await expect(page.locator('.card-flights')).toBeHidden();
 });

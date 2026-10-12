@@ -1,5 +1,7 @@
+import initSqlJs from 'sql.js';
+import { scryptSync } from 'node:crypto';
 import { expect, it } from 'vitest';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { Accounts } from '../apps/server/src/accounts.ts';
@@ -8,8 +10,8 @@ import { riftboundStarters } from '../packages/riftbound-content/src/index.ts';
 it('persists accounts and decks, rejects invalid decks, and isolates account ownership', async () => {
   const file = path.join(await mkdtemp(path.join(os.tmpdir(), 'ember-accounts-')), 'accounts.sqlite');
   let accounts = await Accounts.open(file);
-  const alice = await accounts.command({ type: 'register', username: 'Alice', password: 'test-password-alice' });
-  const bob = await accounts.command({ type: 'register', username: 'Bob', password: 'test-password-bob' });
+  const alice = await accounts.command({ type: 'register', username: 'Alice', password: 'test-password-alice', email: 'alice@example.com' });
+  const bob = await accounts.command({ type: 'register', username: 'Bob', password: 'test-password-bob', email: 'bob@example.com' });
   expect(alice.ok).toBe(true);
   expect(alice.decks!.map(d => d.deck)).toEqual(riftboundStarters.map(s => s.deck));
   expect((await accounts.command({ type: 'login', username: 'Alice', password: 'wrong-password' })).ok).toBe(false);
@@ -30,4 +32,45 @@ it('persists accounts and decks, rejects invalid decks, and isolates account own
   expect(again.decks!).toHaveLength(7);
   await accounts.command({ type: 'logout', token: login.token });
   expect((await accounts.command({ type: 'list', token: login.token })).ok).toBe(false);
+});
+
+it('requires email and six-character passwords, persists private collections and profile changes', async () => {
+  const file = path.join(await mkdtemp(path.join(os.tmpdir(), 'riftbound-profile-')), 'accounts.sqlite');
+  let accounts = await Accounts.open(file);
+  const register = { type: 'register', username: 'Collector', password: 'abcdef', email: ' Collector@EXAMPLE.com ' };
+  expect((await accounts.command({ ...register, password: 'abcde' })).ok).toBe(false);
+  expect((await accounts.command({ ...register, email: 'invalid' })).ok).toBe(false);
+  expect((await accounts.command({ ...register, email: undefined })).ok).toBe(false);
+  const account = await accounts.command(register);
+  expect(account.ok).toBe(true); expect(account.email).toBe('collector@example.com'); expect(account.collection).toEqual({});
+  expect((await accounts.command({ ...register, username: 'Other' })).ok).toBe(false);
+  const other = await accounts.command({ ...register, username: 'Other', email: 'other@example.com' });
+  expect((await accounts.command({ type: 'collection', token: account.token, cardId: 'OGN-030', count: 3 })).collection).toEqual({ 'OGN-030': 3 });
+  expect((await accounts.command({ type: 'list', token: other.token })).collection).toEqual({});
+  for (const count of [-1, 1.5, 1000]) expect((await accounts.command({ type: 'collection', token: account.token, cardId: 'OGN-030', count })).ok).toBe(false);
+  expect((await accounts.command({ type: 'collection', token: account.token, cardId: 'not-a-card', count: 3 })).ok).toBe(false);
+  expect((await accounts.command({ type: 'collection', token: '0'.repeat(64), cardId: 'OGN-030', count: 3 })).ok).toBe(false);
+  expect((await accounts.command({ type: 'profile', token: account.token, email: 'OTHER@example.com' })).ok).toBe(false);
+  expect((await accounts.command({ type: 'profile', token: account.token, email: 'Updated@example.com' })).email).toBe('updated@example.com');
+  accounts = await Accounts.open(file);
+  const login = await accounts.command({ type: 'login', username: 'collector', password: 'abcdef' });
+  expect(login.email).toBe('updated@example.com'); expect(login.collection).toEqual({ 'OGN-030': 3 });
+  expect((await accounts.command({ type: 'collection', token: login.token, cardId: 'OGN-030', count: 0 })).collection).toEqual({});
+  expect((await accounts.command({ type: 'list', token: other.token })).ok).toBe(false);
+});
+
+it('migrates existing accounts without losing passwords or saved decks', async () => {
+  const file = path.join(await mkdtemp(path.join(os.tmpdir(), 'riftbound-legacy-')), 'accounts.sqlite');
+  const SQL = await initSqlJs(), db = new SQL.Database();
+  db.run('CREATE TABLE accounts (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, salt TEXT NOT NULL, hash TEXT NOT NULL); CREATE TABLE decks (id TEXT PRIMARY KEY, owner TEXT NOT NULL, data TEXT NOT NULL)');
+  db.run('INSERT INTO accounts VALUES (?, ?, ?, ?)', ['legacy-id', 'legacy', 'legacy-salt', scryptSync('old-password', 'legacy-salt', 64).toString('hex')]);
+  db.run('INSERT INTO decks VALUES (?, ?, ?)', ['legacy-deck', 'legacy-id', JSON.stringify(starterDeck)]);
+  await writeFile(file, db.export()); db.close();
+  const accounts = await Accounts.open(file);
+  const login = await accounts.command({ type: 'login', username: 'Legacy', password: 'old-password' });
+  expect(login.ok).toBe(true); expect(login.email).toBe(''); expect(login.collection).toEqual({});
+  expect(login.decks?.find(d => d.id === 'legacy-deck')?.deck).toEqual(starterDeck);
+  await accounts.command({ type: 'profile', token: login.token, email: 'legacy@example.com' });
+  const reopened = await Accounts.open(file);
+  expect((await reopened.command({ type: 'login', username: 'legacy', password: 'old-password' })).email).toBe('legacy@example.com');
 });

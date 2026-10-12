@@ -19,5 +19,5 @@ export class Diagnostics {
 // Never log request bodies, credentials, tokens, account names, hands, or deck order.
 export function safeCommand(input: unknown): string {
   const candidate = typeof input === 'object' && input !== null && 'type' in input ? (input as { type: unknown }).type : '';
-  return typeof candidate === 'string' && ['create','join','resume','ready','format','start','action','register','login','list','save','delete','logout','view'].includes(candidate) ? candidate : 'invalid';
+  return typeof candidate === 'string' && ['create','join','resume','ready','format','start','action','register','login','list','save','delete','logout','profile','collection','view'].includes(candidate) ? candidate : 'invalid';
 }

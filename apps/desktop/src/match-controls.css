@@ -1,0 +1,22 @@
+.match-choice, .group-movement, .table-guide { margin: 12px 0; padding: 18px 22px; border: 1px solid #68715d; border-radius: 10px; background: #12232c; color: #dbe5e9; }
+.match-choice h3, .table-guide h3 { margin: 0 0 8px; color: #e4c584; }
+.choice-list { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.choice-list label { display: flex; align-items: center; gap: 8px; padding: 8px; }
+.choice-list input { width: 20px; height: 20px; accent-color: #d5b575; }
+.damage-order li { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+.damage-order li span { flex: 1; }
+.match-choice button, .group-movement button { min-height: 44px; }
+.group-movement summary { cursor: pointer; }
+.cost-feedback { font-size: 12px; line-height: 1.7; padding: 10px; border-left: 2px solid #c8a65d; background: #0e1c23; }
+.support-badge { display: inline-block; font-size: 10px; padding: 4px 7px; border: 1px solid #7e9279; border-radius: 4px; margin: 8px 0; }
+.table-guide p { margin: 8px 0; line-height: 1.6; }
+@media (max-width: 700px) { .match-choice, .group-movement, .table-guide { padding: 14px; } .choice-list { flex-direction: column; } .damage-order { padding-left: 0; } }
+
+.friends-layout[hidden] { display: none; }
+/* Decorative light must never intercept setup controls. */
+.portrait-glow { pointer-events: none; }
+@media (pointer: coarse) {
+  .match-toolbar button, .selection-actions button, .ability-bar button, .destination-button { min-height: 44px; }
+  .hand-zone-label button { min-height: 44px; }
+  .hand-button:focus-visible, .table-unit:focus-visible { outline: 2px solid #e4c584; outline-offset: 3px; }
+}

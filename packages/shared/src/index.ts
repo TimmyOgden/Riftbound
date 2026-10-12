@@ -17,5 +17,5 @@ export const commandSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('move'), unit: z.string().max(80), lane: z.number().int().min(0).max(2) })
   ]) })
 ]);
-export interface LobbyView { code: string; format: Format; host: string; players: { id: string; nickname: string; ready: boolean; connected: boolean }[] }
+export interface LobbyView { matchStarted?: boolean; code: string; format: Format; host: string; players: { id: string; nickname: string; ready: boolean; connected: boolean }[] }
 export interface Reply { ok: boolean; error?: string; token?: string; playerId?: string; requestId?: string }

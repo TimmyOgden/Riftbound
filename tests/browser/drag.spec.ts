@@ -1,3 +1,4 @@
+import { settleMatch } from './match-helpers.ts';
 import { test, expect } from '@playwright/test';
 
 test('Chrome: invalid drop, drag to play, exhausted rejection and drag to move', async ({ page }) => {
@@ -7,6 +8,7 @@ test('Chrome: invalid drop, drag to play, exhausted rejection and drag to move',
   await page.getByRole('combobox').first().selectOption('proving-grounds-lux');
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   const champion = page.getByRole('button', { name: /Select chosen champion/ });
   await champion.dragTo(page.locator('.opponent-base'));
@@ -19,6 +21,7 @@ test('Chrome: invalid drop, drag to play, exhausted rejection and drag to move',
   await page.locator('.your-base .table-unit').dragTo(page.locator('.field-zone').first());
   await expect(page.locator('.your-base .table-unit')).toHaveCount(1);
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await page.locator('.your-base .table-unit').dragTo(page.locator('.field-zone').first());
   await expect(page.locator('.your-base .table-unit')).toHaveCount(0);
@@ -37,6 +40,7 @@ test('Chrome: drag preview, Escape cancellation and Shift-drop Accelerate', asyn
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
   for (let i = 0; i < 3; i++) {
     await page.getByRole('button', { name: 'End turn', exact: true }).click();
+    await settleMatch(page);
     await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   }
   const champion = page.getByRole('button', { name: /Select chosen champion/ });
@@ -66,6 +70,7 @@ test.describe('Touch input', () => {
     await page.getByRole('combobox').first().selectOption('proving-grounds-lux');
     await page.getByRole('button', { name: 'Enter the Rift' }).click();
     await page.getByRole('button', { name: 'End turn', exact: true }).click();
+    await settleMatch(page);
     await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
     const champion = page.getByRole('button', { name: /Select chosen champion/ });
     await champion.scrollIntoViewIfNeeded();

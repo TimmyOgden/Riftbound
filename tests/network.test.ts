@@ -35,7 +35,7 @@ it('connects two independent clients, joins a private room, and saves an account
     const joined = new Promise<LobbyView>(resolve => clients[0].once('lobby', resolve));
     expect((await clients[1].timeout(3000).emitWithAck('command', { type: 'join', nickname: 'Friend', password: 'room-secret', code })).ok).toBe(true);
     expect((await joined).players).toHaveLength(2);
-    const account = await clients[1].timeout(3000).emitWithAck('account', { type: 'register', username: 'Friend', password: 'friend-password-123' }) as AccountReply;
+    const account = await clients[1].timeout(3000).emitWithAck('account', { type: 'register', username: 'Friend', password: 'friend-password-123', email: 'friend@example.com' }) as AccountReply;
     expect(account.ok).toBe(true);
     expect(account.decks).toHaveLength(7);
     const saved = await clients[1].timeout(3000).emitWithAck('account', { type: 'save', token: account.token, deck: starterDeck }) as AccountReply;
@@ -45,6 +45,6 @@ it('connects two independent clients, joins a private room, and saves an account
     const rejected = await clients[0].timeout(3000).emitWithAck('practice', { type: 'action', revision: 99, action: { type: 'end' } });
     expect(rejected.ok).toBe(false); expect(rejected.requestId).toBeDefined();
     const turn = await clients[0].timeout(3000).emitWithAck('practice', { type: 'action', revision: practice.view.revision, action: { type: 'end' } });
-    expect(turn.ok).toBe(true); expect(turn.view.active).toBe(0); expect(turn.view.revision).toBeGreaterThan(1);
+    expect(turn.ok).toBe(true); expect(turn.view.legal.some((a: { type: string }) => a.type === 'pass' || a.type === 'end')).toBe(true); expect(turn.view.revision).toBeGreaterThan(1);
   } finally { clients.forEach(client => client.disconnect()); process.kill(); }
 }, 20000);

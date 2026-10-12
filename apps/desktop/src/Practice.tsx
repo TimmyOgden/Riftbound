@@ -22,6 +22,11 @@ export function Practice({ socket, selectedDeck }: { socket?: Socket; selectedDe
   }
   const deck = custom ? selectedDeck : riftboundStarters.find(s => s.id === starterId)?.deck;
   function actionLabel(action: PracticeAction) {
+    if (action.type === 'pass') return 'Pass priority';
+    if (action.type === 'assign') return 'Assign combat damage';
+    if (action.type === 'group-move') return 'Move group';
+    if (action.type === 'discard') return 'Discard selected cards';
+    if (action.type === 'retrieve') return 'Return spell to hand';
     if (action.type === 'end') return 'End turn';
     if (action.type === 'activate') return `Activate ${action.source}${action.target ? ` on ${action.target}` : ''}`;
     const unitName = (id?: string) => { const unit = view?.units.find(u => u.id === id); return unit ? `${unit.owner === 0 ? 'your' : 'AI'} ${name(unit.cardId)} (${unit.id})` : ''; };

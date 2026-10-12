@@ -1,3 +1,4 @@
+import { settleMatch } from './match-helpers.ts';
 import { test, expect } from '@playwright/test';
 
 test('Chrome: AI moves in sequence, pause/step/skip and action locks', async ({ page }) => {
@@ -7,6 +8,7 @@ test('Chrome: AI moves in sequence, pause/step/skip and action locks', async ({ 
   await page.getByRole('combobox').first().selectOption('proving-grounds-lux');
   await page.getByRole('combobox').nth(1).selectOption('origins-viktor');
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
   const playback = page.getByRole('region', { name: 'AI turn playback' });
@@ -18,8 +20,6 @@ test('Chrome: AI moves in sequence, pause/step/skip and action locks', async ({ 
   const before = await playback.textContent();
   await page.waitForTimeout(1500);
   expect(await playback.textContent()).toBe(before);
-  await page.getByRole('button', { name: 'Next move', exact: true }).click();
-  await expect(playback).not.toHaveText(before!);
   await page.getByRole('button', { name: 'Enlarge card', exact: true }).click();
   const detail = page.getByRole('dialog');
   await expect(detail).toBeVisible();
@@ -30,8 +30,12 @@ test('Chrome: AI moves in sequence, pause/step/skip and action locks', async ({ 
   await page.screenshot({ path: '.runtime/browser-test/ai-playback.png', fullPage: true });
   await expect(page.locator('.hidden-hand img')).toHaveCount(0);
   await expect(page.locator('.flight-draw[data-flight-owner="1"] .flight-front')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Next move', exact: true }).click();
+  await expect(page.locator('.playback-description small')).toContainText('Step 2');
   await page.getByRole('button', { name: 'Skip AI turn', exact: true }).click();
   await expect(playback).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Response window' })).toBeVisible();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await expect(page.locator('.turn-marker')).toContainText('YOUR TURN');
   await expect(page.locator('.flight-play')).toHaveCount(0);
@@ -42,6 +46,7 @@ test('Chrome: AI moves in sequence, pause/step/skip and action locks', async ({ 
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
   await expect(playback).toBeVisible();
   await playback.getByLabel('Speed').selectOption('fast');
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await expect(playback).toHaveCount(0);
   expect(errors).toEqual([]);
@@ -52,6 +57,7 @@ test('Chrome: history, navigation and card detail pause ongoing playback', async
   await expect(page.getByRole('button', { name: 'Enter the Rift' })).toBeEnabled();
   await page.getByRole('combobox').nth(1).selectOption('origins-viktor');
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
   const playback = page.getByRole('region', { name: 'AI turn playback' });
@@ -74,6 +80,7 @@ test('Chrome: history, navigation and card detail pause ongoing playback', async
   expect(await page.locator('.playback-description small').textContent()).toBe(step);
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await page.getByRole('button', { name: 'Skip AI turn', exact: true }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
 });
 
@@ -82,6 +89,7 @@ test('Chrome: leaving during playback cancels queued turns', async ({ page }) =>
   await expect(page.getByRole('button', { name: 'Enter the Rift' })).toBeEnabled();
   await page.getByRole('combobox').nth(1).selectOption('origins-viktor');
   await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await settleMatch(page);
   await expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'End turn', exact: true }).click();
   await expect(page.getByRole('region', { name: 'AI turn playback' })).toBeVisible();
