@@ -1,0 +1,37 @@
+.deck-studio section:has(>.collection-page){max-width:1320px}
+.collection-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:24px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.collection-summary h2{font:28px Georgia,serif;margin:0 0 6px;color:#ede1c3}
+.collection-summary p{font-size:12px;color:var(--muted);margin:0 0 4px}
+.collection-totals{font-size:14px!important;color:var(--gold)!important;margin-top:10px!important}
+.set-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.set-progress button{display:flex;flex-direction:column;gap:6px;text-align:left;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#0f1d26;color:inherit}
+.set-progress button:hover{border-color:#c4a66877}.set-progress button.active{border-color:var(--gold);background:#c4a66814}
+.set-progress span{display:flex;justify-content:space-between;gap:8px;font-size:11px}.set-progress b{color:var(--gold);font-size:11px}
+.set-progress progress{width:100%;height:4px;appearance:none;border:0;border-radius:2px;background:#ffffff14;overflow:hidden}
+.set-progress progress::-webkit-progress-bar{background:#ffffff14}.set-progress progress::-webkit-progress-value{background:var(--gold)}
+.collection-toolbar{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:18px 0 10px}
+.collection-toolbar label{margin:0;flex:0 0 auto}.collection-toolbar .collection-search{flex:1 1 260px}
+.collection-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.domain-chip{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:11px;text-transform:capitalize}
+.domain-chip .rune-icon{width:15px;height:15px}
+.domain-chip.fury{--c:#ff956c}.domain-chip.chaos{--c:#e79cf6}.domain-chip.body{--c:#edc171}.domain-chip.calm{--c:#7fe5c5}.domain-chip.mind{--c:#84d0fc}.domain-chip.order{--c:#f3e7a3}
+.domain-chip .rune-icon{color:var(--c)}.domain-chip:hover{border-color:var(--c)}
+.domain-chip.on{color:#10202a;background:var(--c);border-color:var(--c)}.domain-chip.on .rune-icon{color:#10202a}
+.collection-chips .checkbox{margin:0 0 0 10px}
+.collection-count{margin-left:auto;font-size:11px;color:var(--muted)}
+.collection-page .collection-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:0}
+.collection-page .owned-card{padding:9px;border-radius:12px;display:flex;flex-direction:column;transition:border-color .15s,transform .15s}
+.collection-page .owned-card:hover{transform:translateY(-2px);border-color:#c4a66877}
+.collection-page .owned-card.missing>.card-art{filter:saturate(.35) brightness(.7);transition:filter .2s}
+.collection-page .owned-card.missing:hover>.card-art{filter:none}
+.collection-page .owned-card.have{border-color:#c4a66899;background:#152a33}
+.collection-page .owned-card>strong{margin-top:9px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collection-page .owned-card>small{font-size:10px;color:var(--muted);margin:3px 0 8px;text-transform:capitalize;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.collection-page .owned-card .count-controls{margin-top:auto;gap:4px}
+.collection-page .owned-card .count-controls button{width:30px;height:30px;padding:0;flex:0 0 30px}
+.collection-page .owned-card .count-controls label{flex:1;margin:0;display:flex;justify-content:center}
+.collection-page .owned-card .count-controls label span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.collection-page .owned-card .count-controls input{width:100%;max-width:60px;padding:5px;font-weight:700}
+.collection-page .owned-card.have .count-controls input{color:var(--gold);border-color:#c4a66877}
+@media(max-width:900px){.collection-summary{grid-template-columns:1fr}.set-progress{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.collection-page .collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-count{margin-left:0;width:100%}}
