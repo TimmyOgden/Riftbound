@@ -1,0 +1,21 @@
+import { settleMatch } from './match-helpers.ts';
+import { test, expect } from '@playwright/test';
+test('Chrome: both rune pools burn at the table edges with a new starter deck', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Enter the Rift' })).toBeEnabled();
+  await page.getByRole('combobox').first().selectOption('unleashed-vex');
+  await page.getByRole('button', { name: 'Enter the Rift' }).click();
+  await page.getByRole('button', { name: /Take your seat/ }).click();
+  await settleMatch(page);
+  const yours = page.getByRole('complementary', { name: /^You rune pool: \d+ of \d+ ready$/ });
+  await expect(yours).toBeVisible();
+  await expect(yours.locator('.rune-orb')).not.toHaveCount(0);
+  await expect(page.locator('.rune-well-left')).toBeVisible();
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: '.runtime/browser-test/rune-wells.png' });
+  await page.setViewportSize({ width: 1100, height: 900 });
+  await page.screenshot({ path: '.runtime/browser-test/rune-wells-1100.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});

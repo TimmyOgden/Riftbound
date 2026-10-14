@@ -1,6 +1,6 @@
 # Riftbound Practice Table
 
-An unofficial Riftbound app with a visual AI practice table, seven official Origins/Proving Grounds starter decks, accounts and saved deck building. Private two-player friend matches use interactive beta rules. Four-player match play remains in development. Practice uses a beta rules subset; open **Beta rules** on the table for its limits.
+An unofficial Riftbound app with a visual AI practice table, 13 official starter decks (Origins, Proving Grounds, Spiritforged, Unleashed and Vendetta), accounts or guest play, and saved deck building. Private two-player friend matches use interactive beta rules. Four-player match play remains in development. Practice uses a beta rules subset; open **Beta rules** on the table for its limits.
 
 On macOS, Linux or Windows, install Node.js 22 and pnpm 10.18.3, then run:
 

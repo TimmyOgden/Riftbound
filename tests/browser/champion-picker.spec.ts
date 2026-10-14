@@ -1,0 +1,26 @@
+import { test, expect } from '@playwright/test';
+test('Chrome: champion and legend pickers show a readable card while browsing options', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'My decks', exact: true }).click();
+  await page.getByRole('button', { name: 'Continue as guest', exact: true }).click();
+  await page.getByRole('button', { name: /Create new deck/ }).click();
+  const legends = page.getByRole('listbox', { name: 'Champion legend' });
+  await legends.getByRole('option', { name: /Vex - Gloomist/ }).click();
+  const champions = page.getByRole('listbox', { name: 'Chosen champion' });
+  await expect(champions.getByRole('option', { name: /Vex, Apathetic/ })).toHaveAttribute('aria-selected', 'true');
+  const picker = page.locator('.card-picker').filter({ has: champions });
+  await champions.getByRole('option', { name: /Vex, Mocking/ }).hover();
+  await expect(picker.locator('.card-picker-text strong')).toHaveText('Vex, Mocking');
+  await expect(picker.locator('.card-picker-hint')).toHaveText('Click to choose');
+  await page.screenshot({ path: '.runtime/browser-test/champion-picker.png' });
+  await champions.getByRole('option', { name: /Vex, Mocking/ }).focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(picker.locator('.card-picker-text strong')).not.toHaveText('Vex, Mocking');
+  await champions.getByRole('option', { name: /Vex, Mocking/ }).click();
+  await expect(champions.getByRole('option', { name: /Vex, Mocking/ })).toHaveAttribute('aria-selected', 'true');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: '.runtime/browser-test/champion-picker-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});

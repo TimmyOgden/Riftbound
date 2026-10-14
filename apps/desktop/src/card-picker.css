@@ -1,0 +1,22 @@
+.card-picker-pair{display:grid;gap:18px;margin:16px 0}
+.card-picker{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;border:1px solid var(--line);border-radius:14px;padding:14px;background:#0f1d26aa}
+.card-picker-label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
+.card-picker-options{max-height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;padding-right:4px;scrollbar-width:thin;scrollbar-color:#c4a66855 transparent}
+.card-picker-option{display:grid;grid-template-columns:38px minmax(0,1fr) 16px;gap:10px;align-items:center;text-align:left;background:transparent;border:1px solid transparent;border-radius:9px;padding:5px 8px;color:inherit;width:100%}
+.card-picker-option:hover,.card-picker-option:focus-visible,.card-picker-option.shown{background:#ffffff0d;border-color:#c4a66844;outline:none}
+.card-picker-option.chosen{border-color:#c4a668aa;background:#c4a66814}
+.card-picker-option b{display:block;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-picker-option small{display:block;font-size:10px;color:var(--muted);margin-top:2px;text-transform:capitalize}
+.card-picker-option i{color:var(--gold);font-style:normal}
+.card-picker-thumb{width:38px;overflow:hidden;font-size:0}
+.card-picker-empty{font-size:12px;color:var(--muted)}
+.card-picker-preview{position:sticky;top:12px;align-self:start;display:flex;flex-direction:column;gap:10px}
+.card-picker-preview>.card-art{width:100%;border-radius:12px;box-shadow:0 14px 34px #000a;animation:picker-swap .2s ease-out}
+.card-picker-text strong{display:block;font:17px Georgia,serif;color:#ede1c3}
+.card-picker-text small{display:block;font-size:11px;color:var(--gold);margin:4px 0 6px;text-transform:capitalize}
+.card-picker-text .rules-text{font-size:12px;line-height:1.5;margin:0;white-space:pre-line}
+.card-picker-hint{display:inline-block;margin-top:6px;font-size:10px;letter-spacing:1px;color:var(--cyan)}
+@keyframes picker-swap{from{opacity:.4;transform:scale(.97)}to{opacity:1;transform:none}}
+@media(max-width:800px){.card-picker{grid-template-columns:minmax(0,1fr) 170px}.card-picker-options{max-height:320px}}
+@media(max-width:520px){.card-picker{grid-template-columns:1fr}.card-picker-preview{position:static;flex-direction:row}.card-picker-preview>.card-art{width:130px;flex:0 0 130px}}
+@media(prefers-reduced-motion:reduce){.card-picker-preview>.card-art{animation:none}}

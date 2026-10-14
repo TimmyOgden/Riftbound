@@ -37,7 +37,7 @@ it('connects two independent clients, joins a private room, and saves an account
     expect((await joined).players).toHaveLength(2);
     const account = await clients[1].timeout(3000).emitWithAck('account', { type: 'register', username: 'Friend', password: 'friend-password-123', email: 'friend@example.com' }) as AccountReply;
     expect(account.ok).toBe(true);
-    expect(account.decks).toHaveLength(7);
+    expect(account.decks).toHaveLength(riftboundStarters.length);
     const saved = await clients[1].timeout(3000).emitWithAck('account', { type: 'save', token: account.token, deck: starterDeck }) as AccountReply;
     expect(saved.decks!.at(-1)!.deck).toEqual(starterDeck);
     const practice = await clients[0].timeout(3000).emitWithAck('practice', { type: 'start', deck: riftboundStarters[0].deck, opponent: riftboundStarters[2].id });
